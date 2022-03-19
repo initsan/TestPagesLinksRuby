@@ -1,0 +1,3 @@
+require './HWT'
+
+obj = HWT.newobj.hello
