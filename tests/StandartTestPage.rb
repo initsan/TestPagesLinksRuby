@@ -1,6 +1,6 @@
 require 'selenium-webdriver'
 
-class StandartPage
+class StandartTestPage
 
   @driver
   @page_number

@@ -1,32 +1,39 @@
 require 'selenium-webdriver'
 require './StandartPage'
 
-service = Selenium::WebDriver::Service.chrome(path:'.\drivers\chromedriver.exe')
+def go_through_pages(base_url, driver)
+  pages = Array.new
+  num_page = 0
 
-driver = Selenium::WebDriver.for :chrome, service: service
-baseUrl = 'http://qa-web-test-task.s3-website.eu-central-1.amazonaws.com/'
-
-driver.get baseUrl
-print driver.current_url
-
-pages = Array.new
-numPage = 8540
-
-while !(pages.find {|item| item.is_last == true}) do
-  currentPage = StandartPage.new(driver)
-  currentPage.setPage numPage
-  currentPage.set_has_link
-  pages << currentPage
-  if !(currentPage.has_link)
-    currentPage.set_is_last
+  until pages.find { |item| item.is_last == true } do
+    current_page = StandartPage.new(driver)
+    current_page.set_page num_page
+    current_page.set_has_link
+    pages << current_page
+    unless current_page.has_link
+      current_page.set_is_last
+    end
+    num_page += 1
+    driver.get(base_url + num_page.to_s + ".html")
   end
-  numPage += 1
-  driver.get(baseUrl + numPage.to_s + ".html")
+  pages
 end
 
-result = pages.select { |page| page.has_link == false }
-result.each { |page|
-  puts("Page #{page.page_number} has link = #{page.has_link} is last = #{page.is_last}")
-}
+def print_pages_without_link(pages)
+  result = pages.select { |page| page.has_link == false }
+  result.each { |page|
+    puts("Page #{page.page_number} has link = #{page.has_link} is last = #{page.is_last}")
+  }
+end
+
+service = Selenium::WebDriver::Service.chrome(path:'.\drivers\chromedriver.exe')
+driver = Selenium::WebDriver.for :chrome, service: service
+base_url = 'http://qa-web-test-task.s3-website.eu-central-1.amazonaws.com/'
+
+driver.get base_url
+print driver.current_url
+pages = go_through_pages(base_url, driver)
+print_pages_without_link(pages)
 
 driver.quit
+
